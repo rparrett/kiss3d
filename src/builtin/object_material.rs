@@ -16,6 +16,7 @@ pub struct ObjectMaterial {
     normal: ShaderAttribute<Vector3<f32>>,
     tex_coord: ShaderAttribute<Point2<f32>>,
     light: ShaderUniform<Point3<f32>>,
+    ambient_light: ShaderUniform<Point3<f32>>,
     color: ShaderUniform<Point3<f32>>,
     transform: ShaderUniform<Matrix4<f32>>,
     scale: ShaderUniform<Matrix3<f32>>,
@@ -38,6 +39,7 @@ impl ObjectMaterial {
             normal: effect.get_attrib("normal").unwrap(),
             tex_coord: effect.get_attrib("tex_coord").unwrap(),
             light: effect.get_uniform("light_position").unwrap(),
+            ambient_light: effect.get_uniform("ambient_light").unwrap(),
             color: effect.get_uniform("color").unwrap(),
             transform: effect.get_uniform("transform").unwrap(),
             scale: effect.get_uniform("scale").unwrap(),
@@ -70,6 +72,7 @@ impl Material for ObjectMaterial {
         scale: &Vector3<f32>,
         camera: &mut Camera,
         light: &Light,
+        ambient_light: &Point3<f32>,
         data: &ObjectData,
         mesh: &mut Mesh,
     ) {
@@ -89,6 +92,7 @@ impl Material for ObjectMaterial {
         };
 
         self.light.upload(&pos);
+        self.ambient_light.upload(ambient_light);
 
         /*
          *
@@ -189,8 +193,11 @@ attribute vec3 normal;
 uniform mat3 ntransform, scale;
 uniform mat4 proj, view, transform;
 uniform vec3 light_position;
+uniform vec3 light;
+uniform vec3 ambient_light;
 
 varying vec3 local_light_position;
+varying vec3 local_ambient_light;
 varying vec2 tex_coord_v;
 varying vec3 normalInterp;
 varying vec3 vertPos;
@@ -202,6 +209,7 @@ void main(){
     normalInterp = mat3(view) * ntransform * normal;
     tex_coord_v = tex_coord;
     local_light_position = (view * vec4(light_position, 1.0)).xyz;
+    local_ambient_light = ambient_light;
 }";
 
 // phong-like lighting (heavily) inspired
@@ -214,13 +222,15 @@ const ANOTHER_VERY_LONG_STRING: &'static str = "#version 100
 #endif
 
 varying vec3 local_light_position;
+varying vec3 local_ambient_light;
 varying vec2 tex_coord_v;
 varying vec3 normalInterp;
 varying vec3 vertPos;
 
 uniform vec3 color;
+uniform vec3 ambient_light;
 uniform sampler2D tex;
-const vec3 specColor = vec3(0.4, 0.4, 0.4);
+const vec3 specColor = vec3(1.0, 1.0, 1.0);
 
 void main() {
   vec3 normal = normalize(normalInterp);
@@ -237,7 +247,8 @@ void main() {
   }
 
   vec4 tex_color = texture2D(tex, tex_coord_v);
-  gl_FragColor = tex_color * vec4(color / 3.0 +
+  gl_FragColor = tex_color * vec4(local_ambient_light +
+                                  color / 3.0 +
                                   lambertian * color / 3.0 +
                                   specular * specColor / 3.0, 1.0);
 }";

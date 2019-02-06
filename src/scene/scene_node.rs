@@ -82,9 +82,9 @@ impl SceneNodeData {
     }
 
     /// Render the scene graph rooted by this node.
-    pub fn render(&mut self, pass: usize, camera: &mut Camera, light: &Light) {
+    pub fn render(&mut self, pass: usize, camera: &mut Camera, light: &Light, ambient_light: &Point3<f32>) {
         if self.visible {
-            self.do_render(&na::one(), &Vector3::from_element(1.0), pass, camera, light)
+            self.do_render(&na::one(), &Vector3::from_element(1.0), pass, camera, light, ambient_light)
         }
     }
 
@@ -95,6 +95,7 @@ impl SceneNodeData {
         pass: usize,
         camera: &mut Camera,
         light: &Light,
+        ambient_light: &Point3<f32>,
     ) {
         if !self.up_to_date {
             self.up_to_date = true;
@@ -109,6 +110,7 @@ impl SceneNodeData {
                 pass,
                 camera,
                 light,
+                ambient_light,
             ),
             None => {}
         }
@@ -122,6 +124,7 @@ impl SceneNodeData {
                     pass,
                     camera,
                     light,
+                    ambient_light,
                 )
             }
         }
@@ -885,8 +888,8 @@ impl SceneNode {
     //
 
     /// Render the scene graph rooted by this node.
-    pub fn render(&mut self, pass: usize, camera: &mut Camera, light: &Light) {
-        self.data_mut().render(pass, camera, light)
+    pub fn render(&mut self, pass: usize, camera: &mut Camera, light: &Light, ambient_light: &Point3<f32>) {
+        self.data_mut().render(pass, camera, light, ambient_light)
     }
 
     /// Sets the material of the objects contained by this node and its children.

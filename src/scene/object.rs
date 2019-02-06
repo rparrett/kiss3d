@@ -116,6 +116,7 @@ impl Object {
         pass: usize,
         camera: &mut Camera,
         light: &Light,
+        ambient_light: &Point3<f32>,
     ) {
         self.data.material.borrow_mut().render(
             pass,
@@ -123,6 +124,7 @@ impl Object {
             scale,
             camera,
             light,
+            ambient_light,
             &self.data,
             &mut *self.mesh.borrow_mut(),
         );

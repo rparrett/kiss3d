@@ -47,6 +47,7 @@ impl Material for UvsMaterial {
         scale: &Vector3<f32>,
         camera: &mut Camera,
         _: &Light,
+        _: &Point3<f32>,
         data: &ObjectData,
         mesh: &mut Mesh,
     ) {

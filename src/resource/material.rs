@@ -2,7 +2,7 @@
 
 use camera::Camera;
 use light::Light;
-use na::{Isometry2, Isometry3, Vector2, Vector3};
+use na::{Isometry2, Isometry3, Vector2, Vector3, Point3};
 use planar_camera::PlanarCamera;
 use resource::{Mesh, PlanarMesh};
 use scene::{ObjectData, PlanarObjectData};
@@ -18,6 +18,7 @@ pub trait Material {
         scale: &Vector3<f32>,
         camera: &mut Camera, // FIXME: replace those two arguments by
         light: &Light,       // a structure with all environment datas
+        ambient_light: &Point3<f32>, // a structure with all environment datas
         data: &ObjectData,
         mesh: &mut Mesh,
     );

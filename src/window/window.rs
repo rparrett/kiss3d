@@ -44,6 +44,7 @@ pub struct Window {
     scene: SceneNode,
     scene2: PlanarSceneNode,
     light_mode: Light, // FIXME: move that to the scene graph
+    ambient_light: Point3<f32>,
     background: Vector3<f32>,
     line_renderer: LineRenderer,
     planar_line_renderer: PlanarLineRenderer,
@@ -331,6 +332,11 @@ impl Window {
         TextureManager::get_global_manager(|tm| tm.add(path, name))
     }
 
+    #[doc(hidden)]
+    pub fn add_texture_from_memory(&mut self, image_data: &[u8], name: &str) -> Rc<Texture> {
+        TextureManager::get_global_manager(|tm| tm.add_image_from_memory(image_data, name))
+    }
+
     /// Adds a rectangle to the scene. The rectangle is initially axis-aligned and centered at (0, 0, 0).
     ///
     /// # Arguments
@@ -373,6 +379,11 @@ impl Window {
     /// Sets the light mode. Only one light is supported.
     pub fn set_light(&mut self, pos: Light) {
         self.light_mode = pos;
+    }
+    
+    /// Sets the ambient light color.
+    pub fn set_ambient_light(&mut self, color: Point3<f32>) {
+        self.ambient_light = color;
     }
 
     /// Opens a window, hide it then calls a user-defined procedure.
@@ -417,6 +428,7 @@ impl Window {
             scene: SceneNode::new_empty(),
             scene2: PlanarSceneNode::new_empty(),
             light_mode: Light::Absolute(Point3::new(0.0, 10.0, 0.0)),
+            ambient_light: Point3::new(0.0, 0.0, 0.0),
             background: Vector3::new(0.0, 0.0, 0.0),
             line_renderer: LineRenderer::new(),
             planar_line_renderer: PlanarLineRenderer::new(),
@@ -805,7 +817,7 @@ impl Window {
             self.point_renderer.render(pass, camera);
         }
 
-        self.scene.data_mut().render(pass, camera, &self.light_mode);
+        self.scene.data_mut().render(pass, camera, &self.light_mode, &self.ambient_light);
     }
 
     fn render_planar_scene(&mut self, camera: &mut PlanarCamera) {
