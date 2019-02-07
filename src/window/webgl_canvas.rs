@@ -99,6 +99,23 @@ impl AbstractCanvas for WebGLCanvas {
         });
 
         let edata = data.clone();
+        let _ = web::window().add_event_listener(move |e: webevent::ClickEvent| {
+            let mut edata = edata.borrow_mut();
+            let button = translate_mouse_button(&e);
+            let _ = edata.pending_events.push(WindowEvent::MouseButton(
+                button,
+                Action::Press,
+                translate_mouse_modifiers(&e),
+            ));
+            let _ = edata.pending_events.push(WindowEvent::MouseButton(
+                button,
+                Action::Release,
+                translate_mouse_modifiers(&e),
+            ));
+            edata.button_states[button as usize] = Action::Release;
+        });
+
+        let edata = data.clone();
         let _ = web::window().add_event_listener(move |e: webevent::MouseMoveEvent| {
             let mut edata = edata.borrow_mut();
             edata.cursor_pos = Some((e.offset_x() as f64, e.offset_y() as f64));
